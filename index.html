@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Erdling Song Codex - iPhone Mobile Edition</title>
+  <meta name="description" content="A mobile-first iPhone-friendly Erdling song study page with German lyrics, English translations, real meaning notes, and tap-to-load YouTube embeds." />
+  <meta name="theme-color" content="#09050d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Erdling Codex" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+  <style>
+    :root {
+      --bg: #05050a;
+      --bg2: #0b0814;
+      --panel: rgba(19, 21, 35, .82);
+      --panel2: rgba(255, 255, 255, .06);
+      --panel3: rgba(255, 255, 255, .1);
+      --text: #f7f8ff;
+      --muted: #b8bed2;
+      --dim: #858da5;
+      --line: rgba(255, 255, 255, .15);
+      --hot: #ff2d70;
+      --ice: #7df9ff;
+      --violet: #b46cff;
+      --gold: #ffd166;
+      --green: #80ffb8;
+      --danger: #ff5d5d;
+      --radius: 24px;
+      --shadow: 0 20px 70px rgba(0, 0, 0, .48);
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; background: var(--bg); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at 15% -5%, rgba(255, 45, 112, .28), transparent 34%),
+        radial-gradient(circle at 90% 3%, rgba(125, 249, 255, .22), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(180, 108, 255, .22), transparent 40%),
+        linear-gradient(145deg, #05050a 0%, #0b0d18 48%, #07040b 100%);
+      overflow-x: hidden;
+      padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: radial-gradient(circle at center, black 0%, transparent 84%);
+      z-index: -2;
+    }
+
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+    .wrap { width: min(1120px, calc(100vw - 28px)); margin: 0 auto; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: calc(8px + env(safe-area-inset-top)) 14px 8px;
+      background: linear-gradient(180deg, rgba(5,5,10,.94), rgba(5,5,10,.68));
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+
+    .topbarInner {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      text-decoration: none;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+    }
+
+    .sigil {
+      width: 38px;
+      height: 38px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: #030307;
+      font-weight: 1000;
+      background: radial-gradient(circle at 30% 25%, var(--ice), var(--violet) 46%, var(--hot) 72%, #111 73%);
+      box-shadow: 0 0 24px rgba(125, 249, 255, .28), inset 0 0 18px rgba(255,255,255,.35);
+    }
+
+    .navScroller {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      justify-content: flex-end;
+      padding: 2px 0;
+    }
+    .navScroller::-webkit-scrollbar { display: none; }
+
+    .chip, .chipButton, .loadVideo, .openYT, .tinyButton {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.16);
+      color: var(--text);
+      background: rgba(255,255,255,.065);
+      border-radius: 999px;
+      text-decoration: none;
+      padding: 10px 13px;
+      font-size: 13px;
+      font-weight: 850;
+      white-space: nowrap;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.18);
+      cursor: pointer;
+    }
+
+    .chip.primary, .loadVideo {
+      border-color: rgba(125,249,255,.45);
+      background: linear-gradient(135deg, rgba(125,249,255,.14), rgba(255,45,112,.12));
+    }
+
+    .hero { padding: 34px 0 18px; }
+    .heroGrid {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--ice);
+      border: 1px solid rgba(125,249,255,.32);
+      background: rgba(125,249,255,.08);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(44px, 11vw, 106px);
+      line-height: .84;
+      letter-spacing: -.075em;
+      text-transform: uppercase;
+      text-wrap: balance;
+    }
+
+    .gradientText {
+      background: linear-gradient(90deg, #fff, var(--ice), var(--violet), var(--hot), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      max-width: 800px;
+      color: var(--muted);
+      margin: 18px 0 0;
+      font-size: clamp(16px, 2.3vw, 21px);
+      line-height: 1.52;
+    }
+
+    .heroCard, .songCard, .featureCard, .noteCard, .videoHero {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .heroCard { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .heroCard h2, .videoHero h2 { margin: 0; font-size: 20px; }
+    .heroCard p, .videoHero p { margin: 0; color: var(--muted); line-height: 1.52; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .stat {
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,.055);
+    }
+    .stat b { display: block; font-size: 29px; line-height: 1; }
+    .stat span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.32; }
+
+    .videoHero { margin-top: 20px; padding: 16px; }
+    .videoHeroTop { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
+
+    .videoFrame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 22% 20%, rgba(125,249,255,.26), transparent 34%),
+        radial-gradient(circle at 80% 75%, rgba(255,45,112,.24), transparent 36%),
+        linear-gradient(135deg, #12121c, #06060b);
+      display: grid;
+      place-items: center;
+      min-height: 190px;
+    }
+    .videoFrame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .videoPoster {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+    }
+    .playOrb {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 12px;
+      color: #05050a;
+      font-size: 28px;
+      font-weight: 1000;
+      background: linear-gradient(135deg, var(--ice), var(--hot));
+      box-shadow: 0 0 35px rgba(125,249,255,.28), 0 0 60px rgba(255,45,112,.18);
+    }
+    .videoPoster strong { display: block; font-size: 18px; }
+    .videoPoster small { color: var(--muted); display: block; margin-top: 6px; line-height: 1.35; }
+    .videoActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+    .openYT { color: var(--ice); }
+
+    .section { padding: 28px 0; scroll-margin-top: 90px; }
+    .sectionTitle { display: flex; justify-content: space-between; gap: 18px; align-items: end; margin-bottom: 14px; }
+    .sectionTitle h2 { margin: 0; font-size: clamp(28px, 5vw, 48px); letter-spacing: -.045em; }
+    .sectionTitle p { margin: 0; max-width: 620px; color: var(--muted); line-height: 1.5; }
+
+    .tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin: 16px 0 16px;
+    }
+
+    .searchBox, .songSelect {
+      width: 100%;
+      min-height: 48px;
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      outline: none;
+      padding: 0 16px;
+      box-shadow: inset 0 0 0 999px rgba(255,255,255,.01);
+    }
+    .searchBox:focus, .songSelect:focus { border-color: rgba(125,249,255,.58); box-shadow: 0 0 0 4px rgba(125,249,255,.12); }
+    .songSelect { max-width: 320px; background-color: #151525; }
+
+    .filterRow { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; margin-bottom: 14px; }
+
+    .videoListLabel {
+      margin: 14px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .videoButtonGrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .videoPick {
+      min-height: 48px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .videoPick small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .videoPick.active {
+      border-color: rgba(125,249,255,.55);
+      background: linear-gradient(135deg, rgba(125,249,255,.16), rgba(255,45,112,.10));
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      .songSelect {
+        -webkit-appearance: menulist;
+        appearance: auto;
+        color: #ffffff;
+        background-color: #151525;
+      }
+    }
+    .filterRow::-webkit-scrollbar { display: none; }
+
+    .featured { display: grid; gap: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .featureCard { padding: 18px; scroll-margin-top: 90px; }
+    .songCard { display: flex; flex-direction: column; min-height: 100%; scroll-margin-top: 90px; }
+
+    .featureTop, .songHead {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 16px 16px 0;
+    }
+    .featureTop { padding: 0; margin-bottom: 10px; }
+    h3 { margin: 0; font-size: 24px; letter-spacing: -.03em; }
+    .songCard h3 { font-size: 21px; }
+    .meta { margin-top: 4px; color: var(--dim); font-size: 12px; line-height: 1.35; }
+    .rank {
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--ice);
+      background: rgba(125,249,255,.08);
+      font-weight: 900;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .songBody { padding: 14px 16px 4px; flex: 1; }
+    .tagline { color: #fff; font-size: 16px; font-weight: 850; line-height: 1.35; margin: 0 0 14px; }
+    .label {
+      display: inline-flex;
+      margin: 12px 0 5px;
+      color: var(--ice);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 950;
+    }
+    .small, .meaning { color: var(--muted); line-height: 1.48; margin: 0; font-size: 14px; }
+    .meaning { color: #e8eaff; }
+    .keywords { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
+    .pill {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.055);
+      border-radius: 999px;
+      padding: 6px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .cardFooter { padding: 12px 16px 16px; border-top: 1px solid rgba(255,255,255,.09); margin-top: 12px; }
+    .quote { color: var(--gold); font-family: var(--mono); font-size: 12px; line-height: 1.4; }
+
+    .miniVideo { padding: 0 16px 16px; }
+    .miniVideo .videoFrame { min-height: 160px; border-radius: 17px; }
+    .miniVideo .playOrb { width: 56px; height: 56px; font-size: 21px; }
+    .miniVideo .videoPoster strong { font-size: 15px; }
+    .miniVideo .videoActions { margin-top: 10px; }
+    .miniVideo .loadVideo, .miniVideo .openYT { min-height: 42px; padding: 9px 11px; font-size: 12px; }
+
+    .interpretBox {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .interpretBox > div, .noteCard {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      padding: 13px;
+    }
+    .interpretBox b, .noteCard b { display: block; color: var(--ice); margin-bottom: 7px; }
+    .interpretBox p, .noteCard p { color: var(--muted); line-height: 1.5; margin: 0; font-size: 14px; }
+
+    details.fullBlock {
+      margin-top: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    details.fullBlock summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 950;
+      color: #fff;
+    }
+    details.fullBlock summary::-webkit-details-marker { display: none; }
+    details.fullBlock summary::after { content: "+"; color: var(--ice); font-size: 22px; }
+    details.fullBlock[open] summary::after { content: "−"; }
+    .lyricsGrid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(255,255,255,.1); }
+    .lyricsPane { min-width: 0; padding: 16px; }
+    .lyricsPane + .lyricsPane { border-left: 1px solid rgba(255,255,255,.1); }
+    .lyricsPane h4 { margin: 0 0 10px; color: var(--gold); }
+    pre.lyric {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: var(--sans);
+      color: #eef0ff;
+      line-height: 1.58;
+      font-size: 14px;
+    }
+
+    .notesGrid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+    .sourceBox {
+      margin-top: 16px;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 16px;
+      background: rgba(255,255,255,.045);
+      line-height: 1.5;
+    }
+
+    .bottomDock {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 60;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: linear-gradient(0deg, rgba(5,5,10,.96), rgba(5,5,10,.72));
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255,255,255,.12);
+      display: none;
+    }
+    .dockInner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 520px; margin: 0 auto; }
+    .dockLink {
+      min-height: 46px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.06);
+      text-decoration: none;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (hover: hover) {
+      .chip:hover, .chipButton:hover, .loadVideo:hover, .openYT:hover, .dockLink:hover { transform: translateY(-1px); border-color: rgba(125,249,255,.55); }
+    }
+
+    @media (max-width: 860px) {
+      .heroGrid { grid-template-columns: 1fr; }
+      .grid, .notesGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .interpretBox { grid-template-columns: 1fr; }
+      .lyricsGrid { grid-template-columns: 1fr; }
+      .lyricsPane + .lyricsPane { border-left: 0; border-top: 1px solid rgba(255,255,255,.1); }
+      .sectionTitle { display: block; }
+      .sectionTitle p { margin-top: 7px; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+      .wrap { width: min(100%, calc(100vw - 22px)); }
+      .topbar { padding-left: 10px; padding-right: 10px; }
+      .topbarInner { grid-template-columns: 1fr; gap: 8px; }
+      .brand span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .navScroller { justify-content: flex-start; }
+      .hero { padding-top: 22px; }
+      h1 { font-size: clamp(43px, 15vw, 62px); }
+      .subtitle { font-size: 16px; }
+      .stats { grid-template-columns: 1fr; }
+      .stat { min-height: auto; }
+      .tools { grid-template-columns: 1fr; }
+      .videoButtonGrid { grid-template-columns: 1fr 1fr; }
+      .songSelect { max-width: none; }
+      .grid, .notesGrid { grid-template-columns: 1fr; }
+      .heroCard, .songCard, .featureCard, .noteCard, .videoHero { border-radius: 21px; }
+      .songHead, .featureTop { gap: 10px; }
+      .songCard h3 { font-size: 22px; }
+      .section { padding: 24px 0; scroll-margin-top: 118px; }
+      .featureCard, .songCard { scroll-margin-top: 118px; }
+      .bottomDock { display: block; }
+      .chip, .chipButton { min-height: 42px; padding: 9px 12px; }
+      .videoFrame { border-radius: 18px; min-height: 184px; }
+      pre.lyric { font-size: 15px; line-height: 1.62; }
+    }
+
+    @media (max-width: 380px) {
+      .dockInner { gap: 6px; }
+      .videoButtonGrid { grid-template-columns: 1fr; }
+      .dockLink { font-size: 11px; }
+      .rank { padding: 6px 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; animation: none !important; }
+    }
+
+    @media print {
+      body { background: #fff; color: #000; padding-bottom: 0; }
+      .topbar, .bottomDock, .videoHero, .miniVideo, .tools, .filterRow { display: none !important; }
+      .songCard, .featureCard, .heroCard, .noteCard, .sourceBox { box-shadow: none; background: #fff; color: #000; border-color: #999; }
+      .gradientText { color: #000; background: none; }
+      .small, .subtitle, .meta { color: #333; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <div class="topbarInner">
+      <a class="brand" href="#top" aria-label="Back to top"><span class="sigil">E</span><span>Erdling Codex</span></a>
+      <div class="navScroller" aria-label="Page navigation">
+        <a class="chip primary" href="#videoLab">Videos</a>
+        <a class="chip" href="#featured">Full Lyrics</a>
+        <a class="chip" href="#songs">Top 15</a>
+        <a class="chip" href="#notes">Notes</a>
+        <button class="chipButton" id="expandAll" type="button">Open Lyrics</button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero wrap" id="top">
+    <div class="heroGrid">
+      <div>
+        <div class="kicker">iPhone Mobile Edition</div>
+        <h1><span class="gradientText">Erdling</span><br>Song Codex</h1>
+        <p class="subtitle">A mobile-first study page for Erdling songs: German text where supplied, clean English translation, real meaning analysis, and tap-to-load YouTube embeds sized for iPhone Safari. Angst is now included as a full lyric study.</p>
+        <div class="stats">
+          <div class="stat"><b>15</b><span>song cards with translation and meaning notes</span></div>
+          <div class="stat"><b>4</b><span>full lyric anchors supplied by the user</span></div>
+          <div class="stat"><b>15</b><span>YouTube embed slots with iPhone-friendly loading</span></div>
+        </div>
+      </div>
+      <aside class="heroCard">
+        <h2>Built for phone use</h2>
+        <p>Large touch targets, sticky bottom navigation, single-column song cards on small screens, safe-area padding for iPhone notches, and videos that load only when tapped.</p>
+        <p><b>Important:</b> YouTube embeds need internet access. If an embed is blocked by YouTube, use the Open in YouTube button on that card.</p>
+      </aside>
+    </div>
+
+    <section class="videoHero" id="videoLab">
+      <div class="videoHeroTop">
+        <div>
+          <h2>Mobile video player</h2>
+          <p>Pick a song, then tap the video area to load it.</p>
+        </div>
+      </div>
+      <div class="tools" style="margin-top:0">
+        <select id="heroVideoSelect" class="songSelect" aria-label="Choose a video">
+          <option value="_6r-laPa0t0" data-title="Supernova" data-url="https://www.youtube.com/watch?v=_6r-laPa0t0" data-note="Official audio provided to YouTube by Out of Line Music">#1 Supernova</option>
+          <option value="bHonqQxDNHE" data-title="Mana" data-url="https://www.youtube.com/watch?v=bHonqQxDNHE" data-note="Official music video">#2 Mana</option>
+          <option value="OJ91lfeqssM" data-title="Du bist Soldat" data-url="https://www.youtube.com/watch?v=OJ91lfeqssM" data-note="Official audio provided to YouTube by Out of Line Music">#3 Du bist Soldat</option>
+          <option value="kojG7U-5ehE" data-title="Mein Element" data-url="https://www.youtube.com/watch?v=kojG7U-5ehE" data-note="Official lyric video">#4 Mein Element</option>
+          <option value="_I6A0D4Ej18" data-title="Blitz und Donner" data-url="https://www.youtube.com/watch?v=_I6A0D4Ej18" data-note="Official video clip">#5 Blitz und Donner</option>
+          <option value="yjxByYD_q0Y" data-title="Absolutus Rex" data-url="https://www.youtube.com/watch?v=yjxByYD_q0Y" data-note="Official video clip">#6 Absolutus Rex</option>
+          <option value="YtGaEwoOF1s" data-title="Blizzard" data-url="https://www.youtube.com/watch?v=YtGaEwoOF1s" data-note="Official visualizer">#7 Blizzard</option>
+          <option value="6mRxX_Fnl2s" data-title="Phoenix" data-url="https://www.youtube.com/watch?v=6mRxX_Fnl2s" data-note="Official audio provided to YouTube by Out of Line Music">#8 Phoenix</option>
+          <option value="YvVKRiaeYys" data-title="Es gibt dich nicht" data-url="https://www.youtube.com/watch?v=YvVKRiaeYys" data-note="Official audio provided to YouTube by Out of Line Music">#9 Es gibt dich nicht</option>
+          <option value="yC7eSbY-r6E" data-title="Angst" data-url="https://www.youtube.com/watch?v=yC7eSbY-r6E" data-note="Official audio provided to YouTube by Out of Line Music">#10 Angst</option>
+          <option value="agS1KwDv_Ew" data-title="Tieftaucher" data-url="https://www.youtube.com/watch?v=agS1KwDv_Ew" data-note="Official lyric video">#11 Tieftaucher</option>
+          <option value="jsOxNsPE3UA" data-title="Yggdrasil" data-url="https://www.youtube.com/watch?v=jsOxNsPE3UA" data-note="Official audio provided to YouTube by Out of Line Music">#12 Yggdrasil</option>
+          <option value="fIpI0dyD-Es" data-title="Aus den Tiefen" data-url="https://www.youtube.com/watch?v=fIpI0dyD-Es" data-note="Official audio provided to YouTube by Out of Line Music">#13 Aus den Tiefen</option>
+          <option value="s9V-QAk-aIk" data-title="Leuchtfeuer" data-url="https://www.youtube.com/watch?v=s9V-QAk-aIk" data-note="Official visualizer">#14 Leuchtfeuer</option>
+          <option value="u_sxrcS7M1k" data-title="Dominus Omnium" data-url="https://www.youtube.com/watch?v=u_sxrcS7M1k" data-note="Official visualizer">#15 Dominus Omnium</option>
+        </select>
+        <button id="loadSelectedVideo" class="loadVideo" type="button">Load selected video</button>
+      </div>
+      <div id="heroVideoFrame" class="videoFrame"></div>
+      <div id="heroVideoActions" class="videoActions"></div>
+      <div class="videoListLabel">Video entries</div>
+      <div id="videoButtonList" class="videoButtonGrid">
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=_6r-laPa0t0" target="_blank" rel="noopener noreferrer">#1 Supernova<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=bHonqQxDNHE" target="_blank" rel="noopener noreferrer">#2 Mana<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=OJ91lfeqssM" target="_blank" rel="noopener noreferrer">#3 Du bist Soldat<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=kojG7U-5ehE" target="_blank" rel="noopener noreferrer">#4 Mein Element<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=_I6A0D4Ej18" target="_blank" rel="noopener noreferrer">#5 Blitz und Donner<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=yjxByYD_q0Y" target="_blank" rel="noopener noreferrer">#6 Absolutus Rex<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=YtGaEwoOF1s" target="_blank" rel="noopener noreferrer">#7 Blizzard<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=6mRxX_Fnl2s" target="_blank" rel="noopener noreferrer">#8 Phoenix<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=YvVKRiaeYys" target="_blank" rel="noopener noreferrer">#9 Es gibt dich nicht<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=yC7eSbY-r6E" target="_blank" rel="noopener noreferrer">#10 Angst<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=agS1KwDv_Ew" target="_blank" rel="noopener noreferrer">#11 Tieftaucher<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=jsOxNsPE3UA" target="_blank" rel="noopener noreferrer">#12 Yggdrasil<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=fIpI0dyD-Es" target="_blank" rel="noopener noreferrer">#13 Aus den Tiefen<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=s9V-QAk-aIk" target="_blank" rel="noopener noreferrer">#14 Leuchtfeuer<small>Open in YouTube</small></a>
+          <a class="videoPick fallbackLink" href="https://www.youtube.com/watch?v=u_sxrcS7M1k" target="_blank" rel="noopener noreferrer">#15 Dominus Omnium<small>Open in YouTube</small></a>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section class="section wrap" id="featured">
+      <div class="sectionTitle">
+        <h2>Full lyric studies</h2>
+        <p>These four include the complete German text supplied by the user, a clean English translation, and a deeper meaning breakdown.</p>
+      </div>
+      <div id="featuredMount" class="featured"></div>
+    </section>
+
+    <section class="section wrap" id="songs">
+      <div class="sectionTitle">
+        <h2>Top 15 song cards</h2>
+        <p>Search by title, album, symbol, theme, or meaning. Each card has a tap-to-load YouTube embed.</p>
+      </div>
+      <div class="tools">
+        <input id="search" class="searchBox" type="search" placeholder="Search: soldier, mana, fire, fear, Yggdrasil..." autocomplete="off" />
+        <select id="songJump" class="songSelect" aria-label="Jump to song"></select>
+      </div>
+      <div class="filterRow" aria-label="Filters">
+        <button class="chipButton" type="button" data-filter="all">All</button>
+        <button class="chipButton" type="button" data-filter="full">Full lyric anchors</button>
+        <button class="chipButton" type="button" data-filter="power">Power songs</button>
+        <button class="chipButton" type="button" data-filter="shadow">Shadow</button>
+        <button class="chipButton" type="button" data-filter="video">Has video</button>
+      </div>
+      <div id="songsMount" class="grid"></div>
+    </section>
+
+    <section class="section wrap" id="notes">
+      <div class="sectionTitle">
+        <h2>Translation notes</h2>
+        <p>Key wording where the English needs nuance.</p>
+      </div>
+      <div class="notesGrid">
+        <article class="noteCard"><b>Seelenkrieg</b><p>Not merely “soul war.” In context, it carries psychological war, spiritual pressure, trauma, and endurance.</p></article>
+        <article class="noteCard"><b>Mana</b><p>The song frames power as elemental life-force. The warning matters: hoarded power becomes destructive instead of healing.</p></article>
+        <article class="noteCard"><b>Weißes Licht</b><p>In “Supernova,” white light is not only purity. It is salvation, obsession, and danger at the edge of annihilation.</p></article>
+        <article class="noteCard"><b>Schwarzer Mann</b><p>In “Angst,” translate this as the bogeyman or dark fear figure from German childhood lore. The song is about manufactured fear and obedience, not race.</p></article>
+      </div>
+      <div class="sourceBox">
+        <b>Copyright and meaning note:</b> Full lyrics are included only for the four songs supplied by the user. The “real meaning” sections are interpretive analysis, not verified artist statements. YouTube entries use official videos, official visualizers, official lyric videos, or official audio where available.
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottomDock" aria-label="Mobile quick navigation">
+    <div class="dockInner">
+      <a class="dockLink" href="#top">Top</a>
+      <a class="dockLink" href="#videoLab">Video</a>
+      <a class="dockLink" href="#featured">Lyrics</a>
+      <a class="dockLink" href="#songs">Songs</a>
+    </div>
+  </nav>
+
+  <script>
+    const songs = [{"rank": 1, "title": "Supernova", "year": "2017", "album": "Supernova / Supernova Deluxe Edition", "title_translation": "Supernova", "tagline": "Apocalyptic devotion, anti-hero worship, toxic radiance.", "included": "Full user-provided German lyrics + full English translation.", "source_basis": "Required anchor; also appears in platform top-song references.", "literal": "A supernova is a stellar explosion. In the song, the image becomes love at the end of the world.", "standard": "A lover addresses someone who is dangerous, self-possessed, hated by others, and almost cosmically destructive, yet still calls that person a white light and offers total devotion.", "meaning": "This is not simple romance. It reads like ecstatic devotion to a charismatic destroyer: someone narcissistic, untouchable, hated, magnetic, and morally blackened. The narrator does not merely love them; the narrator wants to survive through them. The white light is salvation and danger at once.", "keywords": ["devotion", "apocalypse", "antihero"], "de": "Die Welt liegt dir zu Füßen, in deiner Fantasie\nDu gehst nicht über Leichen, du tanzt über sie\nUnd spielen die Menschen Katz' und Maus, bist du der Leopard\nErstrahlt die Welt in bunten Farben, malst du alles schwarz\nWenn alle ihren Nächsten lieben, liebst du nur dich selbst\nUnd wenn die Lichter ausgehen, tanzt du noch durch die Nacht\nDie Erde dreht sich rückwärts, ganz so wie du willst\nUnd deshalb will ich mit dir sein, weil du dich nicht verstellst\nUnd weil du du bist, schneid' ich dir mein Herz raus\nDamit es in dir schlägt für mich\nDenn weil du du bist, werd' ich überleben\nAm Ende stehen nur du und ich\nEgal wie heiß die Sonne brennt, wenn die Supernova bricht\nWeil du du bist, wirft das Schicksal Schatten\nDenn du bist mein weißes Licht, mein weißes Licht\nAlle reißen sich am Riemen, du erhängst sie damit\nAuf dein Haupt fällt keine Asche, nur pures reines Gold\nGeduld ist keine Tugend, sowas gibt es für dich nicht\nUnd deshalb will ich mit dir sein, für immer du und ich\nUnd weil du du bist, schneid' ich dir mein Herz raus\nDamit es in dir schlägt für mich\nDenn weil du du bist, werd' ich überleben\nAm Ende stehen nur du und ich\nEgal wie heiß die Sonne brennt, wenn die Supernova bricht\nWeil du du bist, wirft das Schicksal Schatten\nDenn du bist mein weißes Licht, mein weißes Licht\nDu, der Dorn im Auge, sie verachten dich\nDiabolus, Exorzismus, jede Tat ein Stich\nDu, verruchter Judas, deine Lippen sprechen Hass\nDu bist ihr Verderben, blutleer, leichenblass\nEgal wie heiß die Sonne brennt, wenn die Supernova bricht\nUnd weil du du bist, schneid' ich dir mein Herz raus\nDamit es in dir schlägt für mich\nDenn weil du du bist, werd' ich überleben\nAm Ende stehen nur du und ich\nEgal wie heiß die Sonne brennt, wenn die Supernova bricht\nWeil du du bist, wirft das Schicksal Schatten\nDenn du bist mein weißes Licht, mein weißes Licht", "en": "The world lies at your feet, inside your fantasy.\nYou do not walk over corpses, you dance over them.\nAnd when people play cat and mouse, you are the leopard.\nWhen the world shines in bright colors, you paint everything black.\nWhen everyone loves their neighbor, you love only yourself.\nAnd when the lights go out, you still dance through the night.\nThe earth spins backward, exactly as you want it to.\nAnd that is why I want to be with you, because you do not pretend.\nAnd because you are you, I cut my heart out for you\nso that it beats inside you for me.\nBecause you are you, I will survive.\nIn the end, only you and I remain.\nNo matter how hot the sun burns when the supernova breaks,\nbecause you are you, fate casts shadows.\nFor you are my white light, my white light.\nEveryone else pulls themselves together; you hang them with the strap.\nNo ash falls on your head, only pure, clean gold.\nPatience is no virtue; such a thing does not exist for you.\nAnd that is why I want to be with you, forever, you and I.\nAnd because you are you, I cut my heart out for you\nso that it beats inside you for me.\nBecause you are you, I will survive.\nIn the end, only you and I remain.\nNo matter how hot the sun burns when the supernova breaks,\nbecause you are you, fate casts shadows.\nFor you are my white light, my white light.\nYou, the thorn in their eye; they despise you.\nDiabolus, exorcism, every deed a stab.\nYou, wicked Judas, your lips speak hatred.\nYou are their ruin, bloodless, corpse-pale.\nNo matter how hot the sun burns when the supernova breaks.\nAnd because you are you, I cut my heart out for you\nso that it beats inside you for me.\nBecause you are you, I will survive.\nIn the end, only you and I remain.\nNo matter how hot the sun burns when the supernova breaks,\nbecause you are you, fate casts shadows.\nFor you are my white light, my white light.", "quote": "du bist mein weißes Licht", "youtubeId": "_6r-laPa0t0", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=_6r-laPa0t0"}, {"rank": 2, "title": "Mana", "year": "2025", "album": "Mana", "title_translation": "Mana / spiritual power / elemental life-force", "tagline": "Elemental power, healing, and the danger of hoarding spiritual force.", "included": "Full user-provided German lyrics + full English translation.", "source_basis": "Required anchor; official album tracklist includes Mana.", "literal": "Mana is a sacred or supernatural force concept in several traditions and gaming/fantasy language. Here it functions as elemental life-force.", "standard": "The song speaks of ancient paths, suffering, magic, and the four elements: fire, earth, sea, and wind. Mana is the hidden force binding life together.", "meaning": "The real core is disciplined power. Mana heals only when it circulates and binds the elements. Hoarded alone, it becomes destructive: fire consumes, earth crushes, water drowns. The song is basically a ritual about power that must be integrated, not possessed.", "keywords": ["ritual", "elements", "power"], "de": "Zwischen den Echos der Zeit, in Sphären aus Leid\nWo Gefühle sich kreuzen, wandel ich auf einem uralten Pfad\n\nEisiger Hauch betäubt die Sinne, doch ich spüre\nUnerbittliche Macht, voller Pracht, die durch meine Adern fließt\nGleich wie Magie, die sich in die Welt ergießt\nMein Zauber bricht den Fluch, der mich so lange leiden ließ!\n\nIm Prisma der Welten, uralte Gezeiten\nVerbinden sich Kräfte, die wir nicht begreifen!\n\nIch hab das Feuer, das die Zweifel versengt\nDie Erde, die dir neue Hoffnung schenkt\nDas Meer, das dich zu neuen Ufern trägt\nDer Wind, der dich in die Lüfte hebt!\n\nMana, gewebt aus den Wurzeln der Zeit\nVereint die Elemente für die Ewigkeit\nIm Gefüge des Lebens, wo Kräfte sich binden\nLiegt die Wahrheit verborgen - und ich werde sie finden\n\nIm Prisma der Welten, uralte Gezeiten\nVerbinden sich Kräfte, die wir nicht begreifen!\n\nIch hab das Feuer, das die Zweifel versengt\nDie Erde, die dir neue Hoffnung schenkt\nDas Meer, das dich zu neuen Ufern trägt\nDer Wind, der dich in die Lüfte hebt!\n\nIch hab das Feuer, das die Zweifel versengt\nDie Erde, die dir neue Hoffnung schenkt\nDas Meer, das dich zu neuen Ufern trägt\nDer Wind, der dich in die Lüfte hebt!\n\nHältst du das Mana allein in dir fest (nein)\nFrisst die Flamme dein Herz, bis du zu Asche wirst\nErde erdrückt dich, zermahlt dein Gebein\nDie Flut des Meeres zieht dich in sich hinein\n\nIch hab das Feuer, das die Zweifel versengt\nDie Erde, die dir neue Hoffnung schenkt\nDas Meer, das dich zu neuen Ufern trägt\nDer Wind, der dich in die Lüfte hebt!\n\nDer Wind, der dich in die Lüfte hebt!\nDer Wind, der dich in die Lüfte hebt!", "en": "Between the echoes of time, in spheres of suffering,\nwhere feelings cross, I walk upon an ancient path.\n\nAn icy breath numbs the senses, yet I feel\nrelentless power, full of splendor, flowing through my veins,\njust like magic pouring itself into the world.\nMy spell breaks the curse that made me suffer for so long.\n\nIn the prism of worlds, ancient tides\njoin forces we cannot comprehend.\n\nI have the fire that burns doubt away,\nthe earth that gives you new hope,\nthe sea that carries you to new shores,\nthe wind that lifts you into the air.\n\nMana, woven from the roots of time,\nunites the elements for eternity.\nIn the fabric of life, where powers bind together,\nthe truth lies hidden, and I will find it.\n\nIn the prism of worlds, ancient tides\njoin forces we cannot comprehend.\n\nI have the fire that burns doubt away,\nthe earth that gives you new hope,\nthe sea that carries you to new shores,\nthe wind that lifts you into the air.\n\nI have the fire that burns doubt away,\nthe earth that gives you new hope,\nthe sea that carries you to new shores,\nthe wind that lifts you into the air.\n\nIf you hold the mana alone inside yourself, no,\nthe flame devours your heart until you become ash.\nEarth crushes you and grinds your bones.\nThe flood of the sea pulls you into itself.\n\nI have the fire that burns doubt away,\nthe earth that gives you new hope,\nthe sea that carries you to new shores,\nthe wind that lifts you into the air.\n\nThe wind that lifts you into the air.\nThe wind that lifts you into the air.", "quote": "Vereint die Elemente für die Ewigkeit", "youtubeId": "bHonqQxDNHE", "youtubeNote": "Official music video", "youtubeUrl": "https://www.youtube.com/watch?v=bHonqQxDNHE"}, {"rank": 3, "title": "Du bist Soldat", "year": "2016", "album": "Aus den Tiefen / Aus den Tiefen Deluxe Edition", "title_translation": "You Are a Soldier", "tagline": "A survival anthem for psychological war.", "included": "Full user-provided German lyrics + full English translation.", "source_basis": "Required anchor; appears in platform top-song references.", "literal": "Soldat means soldier. Seelenkrieg means war of souls, inner war, or spiritual/psychological war.", "standard": "The song addresses someone battered by betrayal, loss, and destruction, telling them they have never failed because they are still fighting.", "meaning": "This is not militarism in the ordinary battlefield sense. The battlefield is psychic, spiritual, and emotional. The repeated wounds are named bluntly: lost, forgotten, robbed, lied to, desecrated, torn apart, destroyed, betrayed. The chorus reframes survival itself as victory.", "keywords": ["survival", "trauma", "war of souls"], "de": "Du bist Soldat\nWeißt du noch damals\nWie es mit uns beiden war?\nJede Sekunde hatten wir für uns\nHaben alles zusammen gewagt\nDoch vor dir selber schützt dich kein Wort\nKein Sinn, kein Gott\nDie Uhr tickt unentwegt\nUnd darum sag ich dir sofort\nDu bist Soldat\nIm Seelenkrieg\nSoldat\nIm Seelenkrieg\nDu bringst uns den Sieg\nGibst niemals auf, du bist, du bist\nSoldat\nIm Seelenkrieg\nSoldat\nBringst uns den Sieg\nDu hast nie versagt, denn du\nDu bist, du bist Soldat\nDu bist Soldat\nDu bist Soldat\nSchließe die Augen für einen kurzen Augenblick\nDenk doch nur einmal an die Wünsche\nUnd den Traum vom großen Glück\nDu bist Soldat\nIm Seelenkrieg\nSoldat\nIm Seelenkrieg\nDu bringst uns den Sieg\nGibst niemals auf, du bist, du bist\nSoldat\nIm Seelenkrieg\nSoldat\nBringst uns den Sieg\nDu hast nie versagt, denn du\nDu bist, du bist Soldat\nVerloren, vergessen\nBeraubt, belogen\nEntweiht, zerfetzt\nZerstört, betrogen\nVerloren, vergessen\nBeraubt, belogen\nEntweiht, zerfetzt\nZerstört, betrogen\nDu bist Soldat\nIm Seelenkrieg\nSoldat\nIm Seelenkrieg\nDu bringst uns den Sieg\nGibst niemals auf, du bist, du bist\nSoldat\nIm Seelenkrieg\nSoldat\nBringst uns den Sieg\nDu hast nie versagt, denn du\nDu bist, du bist Soldat (verloren, vergessen, beraubt, belogen)\nSoldat (entweiht, zerfetzt, zerstört, betrogen)\nDu bist Soldat (verloren, vergessen, beraubt, belogen)\nSoldat (entweiht, zerfetzt, zerstört, betrogen)\nDu bist Soldat (verloren, vergessen)\nSoldat (beraubt, belogen)\nSoldat (entweiht, zerfetzt)\nSoldat (zerstört, betrogen)\nDu bist Soldat (verloren, vergessen)\nHast nie versagt, denn du (beraubt, belogen, entweiht, zerfetzt)\nDu bist, du bist Soldat (zerstört, betrogen)", "en": "You are a soldier.\nDo you still remember back then,\nhow it was with the two of us?\nEvery second was ours.\nWe dared everything together.\nYet from yourself, no word protects you,\nno meaning, no God.\nThe clock ticks without stopping,\nand that is why I tell you right away:\nYou are a soldier\nin the war of souls,\na soldier\nin the war of souls.\nYou bring us victory.\nYou never give up, you are, you are\na soldier\nin the war of souls,\na soldier.\nYou bring us victory.\nYou never failed, because you,\nyou are, you are a soldier.\nYou are a soldier.\nYou are a soldier.\nClose your eyes for one brief moment.\nJust think once about the wishes\nand the dream of great happiness.\nYou are a soldier\nin the war of souls,\na soldier\nin the war of souls.\nYou bring us victory.\nYou never give up, you are, you are\na soldier\nin the war of souls,\na soldier.\nYou bring us victory.\nYou never failed, because you,\nyou are, you are a soldier.\nLost, forgotten,\nrobbed, lied to,\ndesecrated, torn apart,\ndestroyed, betrayed.\nLost, forgotten,\nrobbed, lied to,\ndesecrated, torn apart,\ndestroyed, betrayed.\nYou are a soldier\nin the war of souls,\na soldier\nin the war of souls.\nYou bring us victory.\nYou never give up, you are, you are\na soldier\nin the war of souls,\na soldier.\nYou bring us victory.\nYou never failed, because you,\nyou are, you are a soldier.\nYou are a soldier: lost, forgotten, robbed, lied to.\nSoldier: desecrated, torn apart, destroyed, betrayed.\nYou are a soldier: lost, forgotten, robbed, lied to.\nSoldier: desecrated, torn apart, destroyed, betrayed.\nYou are a soldier: lost, forgotten.\nSoldier: robbed, lied to.\nSoldier: desecrated, torn apart.\nSoldier: destroyed, betrayed.\nYou are a soldier: lost, forgotten.\nYou never failed, because you were robbed, lied to, desecrated, torn apart.\nYou are, you are a soldier: destroyed, betrayed.", "quote": "Du bist Soldat im Seelenkrieg", "youtubeId": "OJ91lfeqssM", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=OJ91lfeqssM"}, {"rank": 4, "title": "Mein Element", "year": "2016", "album": "Supernova / Supernova Deluxe Edition", "title_translation": "My Element", "tagline": "Identity as force, place, and weapon.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Repeatedly visible as one of Erdling’s strongest platform songs.", "literal": "Mein Element means my element: the place or force where someone is most themselves.", "standard": "The title frames identity as something elemental, not decorative: a natural force one enters or becomes.", "meaning": "The deeper reading is self-recognition. The song’s power is in the idea that a person stops apologizing for what they are and returns to the element that makes them dangerous, alive, and whole.", "keywords": ["identity", "power", "self"], "quote": "Title idea: my element", "youtubeId": "kojG7U-5ehE", "youtubeNote": "Official lyric video", "youtubeUrl": "https://www.youtube.com/watch?v=kojG7U-5ehE"}, {"rank": 5, "title": "Blitz und Donner", "year": "2015", "album": "Aus den Tiefen / single", "title_translation": "Lightning and Thunder", "tagline": "Impact, voltage, eruption.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Platform top-song references and early single status.", "literal": "Blitz und Donner means lightning and thunder.", "standard": "The title suggests sudden force, violent illumination, and sound that arrives like a warning.", "meaning": "The real meaning is the shock of arrival: a self or force that does not ask permission. Lightning exposes; thunder announces that something has already happened.", "keywords": ["impact", "storm", "awakening"], "quote": "Title idea: lightning and thunder", "youtubeId": "_I6A0D4Ej18", "youtubeNote": "Official video clip", "youtubeUrl": "https://www.youtube.com/watch?v=_I6A0D4Ej18"}, {"rank": 6, "title": "Absolutus Rex", "year": "2017", "album": "Supernova / Supernova Deluxe Edition", "title_translation": "Absolute King", "tagline": "Sovereignty taken to its darkest theatrical extreme.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in top-song references and Supernova track listings.", "literal": "Absolutus Rex is Latin-flavored: absolute king.", "standard": "The title points to total rule, domination, and royal self-mythology.", "meaning": "This is power as persona. The song title alone carries the NDH/dark-metal fascination with crowns, command, hierarchy, and the danger of making ego into a throne.", "keywords": ["king", "dominion", "ego"], "quote": "Title idea: absolute king", "youtubeId": "yjxByYD_q0Y", "youtubeNote": "Official video clip", "youtubeUrl": "https://www.youtube.com/watch?v=yjxByYD_q0Y"}, {"rank": 7, "title": "Blizzard", "year": "2020", "album": "Yggdrasil", "title_translation": "Blizzard", "tagline": "A whiteout of feeling: cold, force, endurance.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Apple and Shazam top-song references.", "literal": "Blizzard means a severe snowstorm, also used in German music contexts without translation.", "standard": "The title evokes disorientation, cold, and violent weather.", "meaning": "The real emotional register is being trapped inside an inner winter. A blizzard erases landmarks. Survival depends on inner heat and direction when the world becomes white noise.", "keywords": ["winter", "isolation", "endurance"], "quote": "Title idea: blizzard", "youtubeId": "YtGaEwoOF1s", "youtubeNote": "Official visualizer", "youtubeUrl": "https://www.youtube.com/watch?v=YtGaEwoOF1s"}, {"rank": 8, "title": "Phoenix", "year": "2017", "album": "Supernova era / platform top track", "title_translation": "Phoenix", "tagline": "Rebirth after burning.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Shazam top-song references.", "literal": "The phoenix is the mythical bird reborn from ashes.", "standard": "The song title signals collapse, fire, death, and return.", "meaning": "The deeper meaning is not optimism. It is the brutal bargain of transformation: the old self has to burn before the new self has authority.", "keywords": ["rebirth", "fire", "transformation"], "quote": "Title idea: phoenix", "youtubeId": "6mRxX_Fnl2s", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=6mRxX_Fnl2s"}, {"rank": 9, "title": "Es gibt dich nicht", "year": "2017", "album": "Supernova / Supernova Deluxe Edition", "title_translation": "You Do Not Exist / There Is No You", "tagline": "Absence as haunting.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Apple and Shazam top-song references.", "literal": "Es gibt dich nicht means there is no you, or you do not exist.", "standard": "The title can read as denial, erasure, grief, or confrontation with something unreal.", "meaning": "The real tension is between absence and obsession. Saying someone does not exist can be an attempt to banish them, but the very sentence proves they still occupy the mind.", "keywords": ["absence", "denial", "haunting"], "quote": "Title idea: you do not exist", "youtubeId": "YvVKRiaeYys", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=YvVKRiaeYys"}, {"rank": 10, "title": "Angst", "year": "2017", "album": "Supernova / Supernova Deluxe Edition", "title_translation": "Fear / dread", "tagline": "Childhood fear weaponized into adult panic.", "included": "Full user-provided German lyrics + full English translation.", "source_basis": "Appears in Shazam top-song references and Supernova track listings.", "literal": "Angst means fear, dread, or anxiety. In this song, “schwarzer Mann” is best translated as the bogeyman or dark fear figure from German children’s lore, not as a racial phrase.", "standard": "The song uses the childhood bogeyman threat to show how fear is taught, inherited, and turned into adult paranoia, armed crowds, and public panic.", "meaning": "The real meaning is fear as social programming. Adults scare children into obedience, and that same fear later becomes mass suspicion, locked doors, armed mobs, and people shouting danger into the streets. It is not a racist lyric; it is a song about manufactured dread and the way societies keep obeying old fear stories.", "keywords": ["fear", "bogeyman", "obedience", "panic"], "quote": "Alle haben Angst vorm schwarzen Mann", "youtubeId": "yC7eSbY-r6E", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=yC7eSbY-r6E", "de": "Wenn die Kinder unerzogen\nSchon der Vater hat gedroht\nDer schwarze Mann, er wird dich holen\nWenn du nicht folgst meinem Gebot\nUnd das glauben wir bis heute\nSo in Angst sind Land und Leute\nEtwas Schlimmes wird geschehen\nDas Böse kommt, wird nicht mehr gehen\nUnd die Furcht wächst in die Nacht\nTür und Tore sind bewacht\nDie Rücken nass, die Hände klamm\nAlle haben Angst vorm schwarzen Mann\nIn Dunkelheit schleicht er heran\nBist du nicht brav, fasst er dich an\nTraue keinem Fremden dann\nSo viel Albtraum, so viel Wahn\nUnd so glauben wir bis heute\nSchwer bewaffnet ist die Meute\nAch, sie können es nicht lassen\nSchreien Feuer in die Gassen\nUnd die Furcht wächst in die Nacht\nGar kein Auge zugemacht\nDer Rücken nass, die Hände klamm\nAlle haben Angst vorm schwarzen Mann\nWer hat Angst vorm schwarzen Mann?\nWer hat Angst vorm schwarzen Mann?\nWer hat Angst vorm schwarzen Mann?\nWer hat Angst?\nUnd die Furcht wächst in die Nacht\nGar kein Auge zugemacht\nDie Rücken nass, die Hände klamm\nAlle haben Angst\nSchwarzer Mann\nSchwarzer Mann", "en": "When children are disobedient,\nfather has already made the threat:\nthe bogeyman will come and get you\nif you do not obey my command.\nAnd we still believe that to this day.\nCountry and people live in fear.\nSomething terrible is going to happen.\nEvil is coming, and it will not leave.\nAnd fear grows into the night.\nDoors and gates are guarded.\nBacks are wet, hands are clammy.\nEveryone is afraid of the bogeyman.\nHe creeps closer in the darkness.\nIf you are not good, he will grab you.\nDo not trust any stranger then.\nSo much nightmare, so much delusion.\nAnd so we still believe it to this day.\nThe mob is heavily armed.\nAh, they cannot leave it alone.\nThey scream fire into the streets.\nAnd fear grows into the night.\nNot an eye has closed.\nBacks are wet, hands are clammy.\nEveryone is afraid of the bogeyman.\nWho is afraid of the bogeyman?\nWho is afraid of the bogeyman?\nWho is afraid of the bogeyman?\nWho is afraid?\nAnd fear grows into the night.\nNot an eye has closed.\nBacks are wet, hands are clammy.\nEveryone is afraid.\nBogeyman.\nBogeyman."}, {"rank": 11, "title": "Tieftaucher", "year": "2018", "album": "Dämon era / single", "title_translation": "Deep Diver / Deep Divers", "tagline": "Descent into the underworld inside the self.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Shazam top-song references and discography references.", "literal": "Tieftaucher means deep diver or deep divers.", "standard": "The title suggests going below the surface into pressure, darkness, and hidden life.", "meaning": "The deeper reading is psychological descent. A deep diver is someone who will not stay in safe, shallow interpretation. They go where pressure changes the body and truth becomes dangerous.", "keywords": ["depth", "descent", "shadow"], "quote": "Title idea: deep diver", "youtubeId": "agS1KwDv_Ew", "youtubeNote": "Official lyric video", "youtubeUrl": "https://www.youtube.com/watch?v=agS1KwDv_Ew"}, {"rank": 12, "title": "Yggdrasil", "year": "2020", "album": "Yggdrasil", "title_translation": "Yggdrasil / the World Tree", "tagline": "Cosmic structure, roots, fate, worlds connected.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Last.fm top-track references and album references.", "literal": "Yggdrasil is the world tree in Norse mythology, connecting worlds and realms.", "standard": "The title invokes mythic structure: roots, branches, fate, and the vertical axis between worlds.", "meaning": "The real meaning is connection under pressure. The tree is not pretty scenery; it is the system that holds worlds together while gods, monsters, and humans move through fate.", "keywords": ["myth", "world tree", "fate"], "quote": "Title idea: world tree", "youtubeId": "jsOxNsPE3UA", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=jsOxNsPE3UA"}, {"rank": 13, "title": "Aus den Tiefen", "year": "2016", "album": "Aus den Tiefen", "title_translation": "From the Depths", "tagline": "Emergence from below.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Last.fm top-track references and album track listings.", "literal": "Aus den Tiefen means from the depths.", "standard": "The phrase suggests something rising from darkness, water, earth, or the unconscious.", "meaning": "The real meaning is origin through ordeal. The depths are not just where monsters live; they are where buried truth, rage, grief, and power wait to surface.", "keywords": ["depths", "emergence", "underworld"], "quote": "Title idea: from the depths", "youtubeId": "fIpI0dyD-Es", "youtubeNote": "Official audio provided to YouTube by Out of Line Music", "youtubeUrl": "https://www.youtube.com/watch?v=fIpI0dyD-Es"}, {"rank": 14, "title": "Leuchtfeuer", "year": "2016/2017 era", "album": "Platform top-track references", "title_translation": "Beacon / Signal Fire", "tagline": "A flame that tells the lost where to go.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Last.fm top-track references.", "literal": "Leuchtfeuer means beacon, signal fire, or lighthouse-like guiding fire.", "standard": "The title points to guidance through darkness, distance, storm, or danger.", "meaning": "The real meaning is orientation. A beacon does not remove the darkness. It proves there is still a direction inside it.", "keywords": ["beacon", "hope", "direction"], "quote": "Title idea: signal fire", "youtubeId": "s9V-QAk-aIk", "youtubeNote": "Official visualizer", "youtubeUrl": "https://www.youtube.com/watch?v=s9V-QAk-aIk"}, {"rank": 15, "title": "Dominus Omnium", "year": "2025", "album": "Mana", "title_translation": "Lord of All / Master of Everything", "tagline": "Mythic command in the new Mana era.", "included": "No full lyrics included because they were not supplied.", "source_basis": "Appears in Apple top-song references and Mana album track listings.", "literal": "Dominus Omnium is Latin: lord/master of all.", "standard": "The title evokes command, totality, spiritual hierarchy, and a figure who claims comprehensive authority.", "meaning": "Placed beside Mana, the title reads like the shadow side of sacred power: when elemental force becomes dominion. It pairs nicely with Mana because both deal with power, but one leans toward integration and the other toward rule.", "keywords": ["dominion", "ritual", "authority"], "quote": "Title idea: lord of all", "youtubeId": "u_sxrcS7M1k", "youtubeNote": "Official visualizer", "youtubeUrl": "https://www.youtube.com/watch?v=u_sxrcS7M1k"}];
+
+    const featuredMount = document.getElementById('featuredMount');
+    const songsMount = document.getElementById('songsMount');
+    const search = document.getElementById('search');
+    const songJump = document.getElementById('songJump');
+    const heroVideoSelect = document.getElementById('heroVideoSelect');
+    const heroVideoFrame = document.getElementById('heroVideoFrame');
+    const heroVideoActions = document.getElementById('heroVideoActions');
+    const videoButtonList = document.getElementById('videoButtonList');
+
+    function esc(str='') {
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+    }
+
+    function slug(str='') {
+      return String(str).toLowerCase().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+    }
+
+    function youtubeEmbed(id) {
+      return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?rel=0&modestbranding=1&playsinline=1`;
+    }
+
+    function videoShell(song, compact=false) {
+      if (!song.youtubeId) return '';
+      return `
+        <div class="${compact ? 'miniVideo' : ''}">
+          <div class="videoFrame" data-youtube-id="${esc(song.youtubeId)}" data-video-title="${esc(song.title)}">
+            <button class="videoPoster" type="button" data-load-video="${esc(song.youtubeId)}" aria-label="Load ${esc(song.title)} YouTube video">
+              <span class="playOrb">▶</span>
+              <strong>${esc(song.title)}</strong>
+              <small>${esc(song.youtubeNote || 'YouTube video')} - tap to load</small>
+            </button>
+          </div>
+          <div class="videoActions">
+            <button class="loadVideo" type="button" data-load-nearby-video="${esc(song.youtubeId)}">Load video</button>
+            <a class="openYT" href="${esc(song.youtubeUrl)}" target="_blank" rel="noopener noreferrer">Open in YouTube</a>
+          </div>
+        </div>`;
+    }
+
+    function loadFrame(frame, id, title) {
+      if (!frame || !id) return;
+      frame.innerHTML = `<iframe title="${esc(title || 'YouTube video')}" src="${youtubeEmbed(id)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+    }
+
+    function fullLyricsBlock(song) {
+      if (!song.de || !song.en) return '';
+      return `
+        <details class="fullBlock">
+          <summary>German lyrics + English translation</summary>
+          <div class="lyricsGrid">
+            <div class="lyricsPane"><h4>German text</h4><pre class="lyric">${esc(song.de)}</pre></div>
+            <div class="lyricsPane"><h4>English translation</h4><pre class="lyric">${esc(song.en)}</pre></div>
+          </div>
+        </details>`;
+    }
+
+    function feature(song) {
+      return `
+        <article class="featureCard" id="${esc(slug(song.title))}">
+          <div class="featureTop">
+            <div>
+              <h3>${esc(song.title)}</h3>
+              <div class="meta">${esc(song.album)} • ${esc(song.year)} • ${esc(song.title_translation)}</div>
+            </div>
+            <span class="rank">#${song.rank}</span>
+          </div>
+          <p class="tagline">${esc(song.tagline)}</p>
+          ${videoShell(song, false)}
+          <div class="interpretBox">
+            <div><b>Plain English</b><p>${esc(song.standard)}</p></div>
+            <div><b>Real meaning</b><p>${esc(song.meaning)}</p></div>
+            <div><b>Translation note</b><p>${esc(song.literal)}</p></div>
+          </div>
+          ${fullLyricsBlock(song)}
+        </article>`;
+    }
+
+    function card(song) {
+      return `
+        <article class="songCard" id="card-${esc(slug(song.title))}" data-title="${esc(song.title)}" data-full="${song.de ? 'true' : 'false'}" data-video="${song.youtubeId ? 'true' : 'false'}" data-search="${esc(JSON.stringify(song).toLowerCase())}">
+          <div class="songHead">
+            <div>
+              <h3>${esc(song.title)}</h3>
+              <div class="meta">${esc(song.year)} • ${esc(song.album)}</div>
+            </div>
+            <span class="rank">#${song.rank}</span>
+          </div>
+          <div class="songBody">
+            <p class="tagline">${esc(song.tagline)}</p>
+            <span class="label">title translation</span>
+            <p class="small">${esc(song.title_translation)}</p>
+            <span class="label">standard translation</span>
+            <p class="small">${esc(song.standard)}</p>
+            <span class="label">real meaning</span>
+            <p class="meaning">${esc(song.meaning)}</p>
+            <span class="label">video source</span>
+            <p class="small">${esc(song.youtubeNote || 'No video linked')}</p>
+            <div class="keywords">${song.keywords.map(k => `<span class="pill">${esc(k)}</span>`).join('')}</div>
+          </div>
+          ${videoShell(song, true)}
+          <div class="cardFooter"><div class="quote">${esc(song.quote || song.literal)}</div></div>
+        </article>`;
+    }
+
+    function render() {
+      const q = (search.value || '').trim().toLowerCase();
+      const filtered = songs.filter(s => !q || JSON.stringify(s).toLowerCase().includes(q));
+      songsMount.innerHTML = filtered.map(card).join('') || `<p class="small">No matches. Try another word.</p>`;
+    }
+
+    function populateSelects() {
+      const jumpOptions = [`<option value="">Jump to song...</option>`].concat(songs.map(s => `<option value="card-${esc(slug(s.title))}">#${s.rank} ${esc(s.title)}</option>`));
+      songJump.innerHTML = jumpOptions.join('');
+      const videoSongs = songs.filter(s => s.youtubeId);
+      heroVideoSelect.innerHTML = videoSongs.map(s => `<option value="${esc(s.youtubeId)}" data-title="${esc(s.title)}" data-url="${esc(s.youtubeUrl)}" data-note="${esc(s.youtubeNote)}">#${s.rank} ${esc(s.title)}</option>`).join('');
+      if (videoButtonList) {
+        videoButtonList.innerHTML = videoSongs.map(s => `<button class="videoPick" type="button" data-pick-video="${esc(s.youtubeId)}" data-title="${esc(s.title)}" data-url="${esc(s.youtubeUrl)}">#${s.rank} ${esc(s.title)}<small>${esc(s.youtubeNote || 'YouTube video')}</small></button>`).join('');
+      }
+    }
+
+    function renderHeroPoster() {
+      const opt = heroVideoSelect.selectedOptions[0];
+      if (!opt) return;
+      const id = opt.value;
+      const title = opt.dataset.title;
+      const url = opt.dataset.url;
+      const note = opt.dataset.note;
+      heroVideoFrame.innerHTML = `
+        <button class="videoPoster" type="button" data-load-hero-video="${esc(id)}" aria-label="Load ${esc(title)} YouTube video">
+          <span class="playOrb">▶</span>
+          <strong>${esc(title)}</strong>
+          <small>${esc(note)} - tap to load</small>
+        </button>`;
+      heroVideoActions.innerHTML = `<button class="loadVideo" type="button" data-load-hero-video="${esc(id)}">Load video</button><a class="openYT" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open in YouTube</a>`;
+      document.querySelectorAll('.videoPick[data-pick-video]').forEach(btn => btn.classList.toggle('active', btn.dataset.pickVideo === id));
+    }
+
+    featuredMount.innerHTML = songs.filter(s => s.de && s.en).map(feature).join('');
+    populateSelects();
+    render();
+    renderHeroPoster();
+
+    search.addEventListener('input', render);
+    songJump.addEventListener('change', () => {
+      const target = songJump.value;
+      if (!target) return;
+      const el = document.getElementById(target);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      songJump.value = '';
+    });
+
+    heroVideoSelect.addEventListener('change', renderHeroPoster);
+    document.getElementById('loadSelectedVideo').addEventListener('click', () => {
+      const opt = heroVideoSelect.selectedOptions[0];
+      if (opt) loadFrame(heroVideoFrame, opt.value, opt.dataset.title);
+    });
+
+    document.addEventListener('click', e => {
+      const pickBtn = e.target.closest('[data-pick-video]');
+      if (pickBtn) {
+        heroVideoSelect.value = pickBtn.dataset.pickVideo;
+        renderHeroPoster();
+        loadFrame(heroVideoFrame, pickBtn.dataset.pickVideo, pickBtn.dataset.title || 'YouTube video');
+        document.getElementById('videoLab').scrollIntoView({behavior:'smooth', block:'start'});
+        return;
+      }
+
+      const heroBtn = e.target.closest('[data-load-hero-video]');
+      if (heroBtn) {
+        const opt = heroVideoSelect.selectedOptions[0];
+        loadFrame(heroVideoFrame, heroBtn.dataset.loadHeroVideo, opt ? opt.dataset.title : 'YouTube video');
+        return;
+      }
+      const posterBtn = e.target.closest('[data-load-video]');
+      if (posterBtn) {
+        const frame = posterBtn.closest('.videoFrame');
+        loadFrame(frame, posterBtn.dataset.loadVideo, frame ? frame.dataset.videoTitle : 'YouTube video');
+        return;
+      }
+      const nearbyBtn = e.target.closest('[data-load-nearby-video]');
+      if (nearbyBtn) {
+        const shell = nearbyBtn.closest('.miniVideo') || nearbyBtn.closest('.featureCard');
+        const frame = shell ? shell.querySelector('.videoFrame') : null;
+        loadFrame(frame, nearbyBtn.dataset.loadNearbyVideo, frame ? frame.dataset.videoTitle : 'YouTube video');
+      }
+    });
+
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.filter;
+        if (mode === 'all') search.value = '';
+        if (mode === 'full') search.value = 'full user-provided';
+        if (mode === 'power') search.value = 'power fire mana dominion king';
+        if (mode === 'shadow') search.value = 'trauma fear shadow absence depths';
+        if (mode === 'video') search.value = 'youtube';
+        render();
+        document.getElementById('songs').scrollIntoView({behavior:'smooth'});
+      });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', () => {
+      document.querySelectorAll('.fullBlock').forEach(d => d.open = true);
+      document.getElementById('featured').scrollIntoView({behavior:'smooth'});
+    });
+  </script>
+</body>
+</html>
